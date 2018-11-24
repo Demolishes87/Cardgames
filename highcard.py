@@ -1,14 +1,14 @@
 import random #For Shuffle
 import time #Creates delays in the Menu
 
-from cards import Deck #All deck methods are in cards.py
+from classes import *
 
 # Global Variables
 
 p1_score = 0
 p2_score = 0
 menu_options = ["Play", "See Scoreboard", "End", "1", "2", "3"]
-deck = Deck()
+deck = Deck(1) # Creates a new deck from the Deck class in cards.py
 
 
 def scoreboard():
