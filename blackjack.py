@@ -2,9 +2,8 @@ from classes import *
 import time
 import sys
 
-#Game Menu
-
-
+#Pre Game Control Flow
+#Pre Game Phase 1 - Welcome user, get player name.
 print("Hello! Welcome to Blackjack!\n")
 #time.sleep(2)
 player = Player(str(input("What is your name?: ")))
@@ -12,25 +11,25 @@ print("---")
 print("Hi {}, Good Luck!\n---".format(player.name))
 #time.sleep(2)
 
-#Create 8 Decks and the Dealer
+#Pre Game Phase 2 - Create 8 Decks and the Dealer
 
 deck = Deck(8)
 dealer = Dealer("Dickhead")
 
-#Shuffle the 8 Decks
+#Pre Game Phase 3 - Shuffle the 8 Decks and insert the cut card
 
 deck.shuffle()
 
-#Insert the cut card at a random index in the final third of the deck
-
 #deck.insert_cut_card() IMPLEMENT NEXT
 
-#Inital Chip Purchase
+#Pre Game Phase 4 - Set initial bankroll
 
 player.chips()
 
 
-#Main Game Menu
+#Game Flow
+
+#Phase One - Instantiate game menu
 
 
 while player.play:
@@ -40,6 +39,8 @@ while player.play:
     hand_valid = True
 
     if start_game == 1:
+        player.turn = 0
+        player.insurance = 0
         dealer.hand = []
         player.hand = []
         if player.bankroll == 0:
@@ -47,15 +48,9 @@ while player.play:
             time.sleep(2)
             player.buy_more_chips()
 
-        #Take Bet
-
+        #Phase Two - Take Player Bet and Deal Cards
         player.take_bet()
         print("---")
-
-        #Deal to Player and Dealer
-        #Resetting player turn and insurance side bet
-        player.turn = 0
-        player.insurance = 0
         print("...Dealing Cards...")
         #time.sleep(1.5)
         print("---")
@@ -65,10 +60,10 @@ while player.play:
         #dealer.draw(deck)
 
         #USE TO TEST HANDS
-        player.hand = [Card("Hearts", "6"), Card("Hearts", "5")]
-        dealer.hand = [Card("Hearts", "Ace"), Card("Hearts", "King")]
+        player.hand = [Card("Hearts", "Ace"), Card("Hearts", "King")]
+        dealer.hand = [Card("Hearts", "Ace"), Card("Hearts", "5")]
 
-        #Phase 1 - Displaying Dealer and Player Hands
+        #Phase Three - Displaying Dealer and Player Hands
 
         print(dealer.show_upcard())
         #time.sleep(1.5)
@@ -78,10 +73,57 @@ while player.play:
 
         while hand_valid:
 
-            #Phase 2 - Check for insurance, Initial BlackJacks and Ties
+            #Phase 4 - Check for insurance and Initial Blackjacks
             #Insurance
             if dealer.insurance_flag == True and player.turn == 0:
                 player.insurance = player.bet / 2
+                if player.hand_value() == 21:
+                    decision = input("Do you want even money payout (Y/N)?: ")
+                    if decision == "Y":
+                        print("You take even money on your bet, and win {}!".format(player.bet))
+                        time.sleep(3)
+                        print("---")
+                        player.bankroll += player.bet
+                        break
+                    if decision == "N":
+                        insurance_decision = input("Would you like to take insurance (Y/N)?: ")
+                        if insurance_decision == "Y":
+                            print("\nYou pay {} for insurance".format(player.insurance))
+                            print("---")
+                            # time.sleep(2)
+                            print("The Dealer checks for Blackjack...\n")
+                            # time.sleep(3)
+                            if dealer.dealer_hand_check() == "Blackjack":
+                                print("...The Dealer reveals the {}".format(dealer.hand[1]))
+                                print("---")
+                                # time.sleep(2)
+                                print("The Dealer has Blackjack!\n")
+                                # time.sleep(2)
+                                print("You won {} from your insurance bet...\n".format(player.insurance))
+                                time.sleep(2)
+                                print("...But you pushed on your hand!".format(player.bet))
+                                time.sleep(2)
+                                print("---")
+                                player.bankroll += player.bet
+                                # time.sleep(2)
+                                dealer.insurance_flag = False
+                                hand_valid = False
+                                break
+                            else:
+                                print("...The Dealer does not have Blackjack")
+                                print("---")
+                                # time.sleep(2)
+                                print("You lose your insurance bet of {}...\n".format(player.insurance))
+                                time.sleep(2)
+                                print("...But you win your bet of {}".format(player.bet))
+                                time.sleep(2)
+                                print("---")
+                                # time.sleep(3)
+                                player.bankroll += player.bet
+                                dealer.insurance_flag = False
+                                hand_valid = False
+                                break
+
                 if player.insurance + player.bet < player.bankroll:
                     insurance_decision = input("Would you like to take insurance (Y/N)?: ")
                     if insurance_decision == "Y":
@@ -102,7 +144,6 @@ while player.play:
                             dealer.insurance_flag = False
                             hand_valid = False
                             break
-
                         else:
                             print("...The Dealer does not have Blackjack")
                             print("---")
@@ -112,7 +153,6 @@ while player.play:
                             #time.sleep(3)
                             player.bankroll -= player.insurance
                             dealer.insurance_flag = False
-
                     elif insurance_decision == "N":
                         if dealer.dealer_hand_check() == "Blackjack":
                             print("...The Dealer reveals the {}\n".format(dealer.hand[1]))
@@ -126,7 +166,6 @@ while player.play:
                             dealer.insurance_flag = False
                             hand_valid = False
                             break
-
                         else:
                             print("\nThe Dealer checks for Blackjack...")
                             #time.sleep(3)
@@ -134,7 +173,6 @@ while player.play:
                             print("---")
                             #time.sleep(2)
                             dealer.insurance_flag = False
-
             #Blackjacks
             if dealer.dealer_hand_check() == "Blackjack" and player.turn == 0:
                 print("...The Dealer reveals the {}\n".format(dealer.hand[1]))
@@ -162,7 +200,7 @@ while player.play:
                 player.bankroll += player.bet * 3/2
                 break
 
-            # Phase 3 - Player Actions
+            #Phase Five - Player Actions
 
             bj_menu = player.bj_menu()
 
@@ -189,15 +227,13 @@ while player.play:
                     hand_valid = True
 
             #2)Stand
-
-
             if bj_menu == 2:
                 player.turn += 1
                 print("\nYou stand on {}.\n".format(player.hand_value()))
                 print("---")
                 #time.sleep(2)
 
-                #Phase 2.4 - Dealer Actions
+                #Phase Six.2 - Dealer Actions
 
                 print("The Dealer flips his second card...\n")
                 #time.sleep(4)
@@ -216,7 +252,7 @@ while player.play:
                 print("The Dealer has {}\n".format(dealer.hand_value()))
                 #time.sleep(2)
 
-                # Phase 2.5 - Deciding a winner and Payouts
+                # Phase Seven.2 - Deciding a winner and Payouts
 
                 if show_down(dealer.hand_value(), player.hand_value(), player.bet, player.bankroll) == "win":
                     player.bankroll = player.bankroll + player.bet
@@ -253,7 +289,7 @@ while player.play:
                     elif player.hand_check() == "Valid":
                         hand_valid = True
 
-                        # Phase 2.4 - Dealer Actions
+                        # Phase Six.3 - Dealer Actions
 
                         print("The Dealer flips his second card...\n")
                         #time.sleep(4)
@@ -272,7 +308,7 @@ while player.play:
                         print("The Dealer has {}\n".format(dealer.hand_value()))
                         #time.sleep(2)
 
-                        # Phase 2.5 - Deciding a winner and Payouts
+                        # Phase Seven.3 - Deciding a winner and Payouts
 
                         if show_down(dealer.hand_value(), player.hand_value(), player.bet, player.bankroll) == "win":
                             player.bankroll = player.bankroll + player.bet
