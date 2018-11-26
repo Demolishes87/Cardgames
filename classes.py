@@ -15,6 +15,40 @@ def order_drink():
     print("\nGood choice, enjoy!\n")
     return "Good choice, enjoy!"
 
+def show_down(dealer,player,bet,bankroll):
+
+    if dealer > 21:
+        print("The Dealer Busts!\n")
+        time.sleep(2)
+        print("You win {} chips!\n".format(bet))
+        print("---")
+        time.sleep(2)
+        return "win"
+
+    if player > dealer:
+        print("You have {}\n".format(player))
+        time.sleep(2)
+        print("You win {} chips!\n".format(bet))
+        print("---")
+        time.sleep(2)
+        return "win"
+
+    elif player < dealer:
+        print("You have {}\n".format(player))
+        time.sleep(2)
+        print("You lose {} chips!\n".format(bet))
+        print("---")
+        time.sleep(2)
+        return "lose"
+
+    else:
+        print("You have {}\n".format(player))
+        time.sleep(2)
+        print("You and The Dealer Pushed!\n")
+        print("---")
+        time.sleep(2)
+        return "push"
+
 
 class Card:
 
@@ -144,16 +178,26 @@ class Player:
         self.bankroll = 0
         self.bet = 0
         self.play = True
+        self.insurance = 0
+        self.turn = 0
 
     def play_menu(self):
+        result_list = [1, 2, 3, 4, 5]
         print("Please Select an Option: \n")
         print("1)Deal")
         print("2)Chip Count")
         print("3)Buy More Chips")
         print("4)Buy a Drink")
         print("5)Quit")
-        #return int(input("---> "))
-        result = int(input("---> "))
+        while True:
+            try:
+                result = int(input("---> "))
+                if result not in result_list:
+                    print("Oops!  That was not a valid number.  Try again...")
+                else:
+                    break
+            except ValueError:
+                print("Oops!  That was not a valid number.  Try again...")
         while result:
             if result == 1:
                 return 1
@@ -228,19 +272,23 @@ class Player:
 
     def hand_check(self):
         if self.hand_value() == 21:
-            print("You Have BlackJack!\n")
-            time.sleep(.5)
+            print("You Have Blackjack!\n")
+            time.sleep(2)
             payout = (self.bet * 3/2)
             self.bankroll += (self.bet * 3/2)
-            print("You won {}!\n".format(payout))
-            time.sleep(.5)
+            print("You won {}!".format(payout))
+            time.sleep(2)
             self.bet = 0
+            print("---")
             return "Blackjack"
         elif self.hand_value() > 21:
             print("You Busted with {}!\n". format(self.hand_value()))
-            print("You lost {} chips!\n".format(self.bet))
+            time.sleep(2)
+            print("You lost {} chips!".format(self.bet))
+            time.sleep(2)
             self.bankroll -= self.bet
             self.bet = 0
+            print("---")
             return "Bust"
         else:
             return "Valid"
@@ -305,9 +353,8 @@ class Dealer(Player):
 
     def dealer_hand_check(self):
         if self.hand_value() == 21:
-            print("Dealer has BlackJack!\n")
             time.sleep(1)
-            return "BlackJack"
+            return "Blackjack"
 
     def show_upcard(self):
         if self.hand[0].rank == "Ace":
@@ -320,10 +367,4 @@ class Dealer(Player):
         myList = ', '.join(map(str, self.hand))
         return "The Dealer has the {}\n".format(myList)
 
-    def check_insurance(self):
-        if self.insurance_flag == True:
-            answer = input("Would you like to take insurance? Y/N: ")
-            if answer == "Y":
-                return "You are dumb"
-            else:
-                return "Good Job"
+
